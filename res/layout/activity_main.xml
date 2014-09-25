@@ -198,22 +198,50 @@
         </LinearLayout>
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btUpload"
+    <LinearLayout
+        android:id="@+id/layoutDelete"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0"
-        android:background="@android:drawable/btn_default"
-        android:drawableLeft="@android:drawable/ic_menu_upload"
-        android:text="Upload" />
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:visibility="gone" >
 
-    <Button
-        android:id="@+id/btDelete"
+        <Button
+            android:id="@+id/btCancel"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@android:drawable/btn_default"
+            android:drawableLeft="@android:drawable/ic_menu_upload"
+            android:text="Cancel" />
+
+        <Button
+            android:id="@+id/btDelete"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@android:drawable/btn_default"
+            android:drawableLeft="@android:drawable/ic_menu_delete"
+            android:text="Delete" />
+    </LinearLayout>
+    
+    
+    <LinearLayout
+        android:id="@+id/layoutSort"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0"
-        android:background="@android:drawable/btn_default"
-        android:drawableLeft="@android:drawable/ic_menu_delete"
-        android:text="Confirm Delete" />
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:visibility="gone" >
+
+        <Button
+            android:id="@+id/btFinishSorting"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@android:drawable/btn_default"
+            android:text="Done" />
+
+    </LinearLayout>
 
 </LinearLayout>

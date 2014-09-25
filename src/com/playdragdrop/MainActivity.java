@@ -1,5 +1,6 @@
 package com.playdragdrop;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import android.app.Activity;
@@ -20,22 +21,31 @@ import android.view.View.OnClickListener;
 import android.view.View.OnDragListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
 	private static final int ACTIVITY_SELECT_IMAGE = 0;
 
+	protected static final String IMAGE_PATH = "image_path";
+
+	Button btCancel, btDelete, btFinishSorting;
+	TextView tvDragHint;
+	LinearLayout layoutDelete, layoutSort;
+
 	// The list of added ImageViews
 	ArrayList<ImageView> listImageView;
 
-	// The list of image addresses
-	ArrayList<MyImage> listMyImage;
-
+	//The number of photos being added
+	private int numPhoto = 0;
+	
+	
 	// The list of containers
 	ArrayList<RelativeLayout> listParent;
 
@@ -55,12 +65,17 @@ public class MainActivity extends Activity {
 	 */
 	private void initViews() {
 		listImageView = new ArrayList<ImageView>();
-		listMyImage = new ArrayList<MyImage>();
 		listParent = new ArrayList<RelativeLayout>();
 		listChkbox = new ArrayList<CheckBox>();
 
-		// btUpload = (Button) findViewById(R.id.btUpload);
-		// btDelete = (Button) findViewById(R.id.btDelete);
+		btCancel = (Button) findViewById(R.id.btCancel);
+		btDelete = (Button) findViewById(R.id.btDelete);
+		btFinishSorting = (Button) findViewById(R.id.btFinishSorting);
+		
+		
+		tvDragHint = (TextView) findViewById(R.id.tvHint);
+		layoutDelete = (LinearLayout) findViewById(R.id.layoutDelete);
+		layoutSort   = (LinearLayout) findViewById(R.id.layoutSort);
 
 		listParent.add((RelativeLayout) findViewById(R.id.row0col0));
 		listParent.add((RelativeLayout) findViewById(R.id.row0col1));
@@ -79,35 +94,88 @@ public class MainActivity extends Activity {
 	 * reset all display, clear all listeners.
 	 */
 	private void resetDisplay() {
-		
-		
-		
-		
 		// remove all views
 		for (RelativeLayout parent : listParent) {
 			parent.removeAllViews();
 		}
 
-		// clear the touch listeners, drag listeners
-		int i = 0;
-		for (ImageView iv : listImageView) {
-			iv.setOnTouchListener(null);
-			iv.setOnDragListener(null);
 
+		for (int i = 0; i < listImageView.size(); i++) {
 			RelativeLayout parent = listParent.get(i);
-			parent.addView(listImageView.get(i));
-			i++;
+			ImageView iv = listImageView.get(i);
+			parent.addView(iv);
+			
+			iv.setOnTouchListener(null);
+			iv.setOnClickListener(new ViewImageClickListener());
 		}
 		
+		
+
 		// clear the checkbox List or the status will be wrong
 		listChkbox.clear();
+		layoutDelete.setVisibility(View.GONE);
+		layoutSort.setVisibility(View.GONE);
+		tvDragHint.setVisibility(View.GONE);
+
+	}
+
+	private ImageView addImageToImageView(MyImage image) {
+		
+//		This is where the ImageView is created. 
+		ImageView iv = new ImageView(this);
+		iv.setImageBitmap(image.yourSelectedImage);
+		iv.setLayoutParams(new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.MATCH_PARENT));
+		iv.setTag(image);
+		iv.setOnClickListener(new ViewImageClickListener());
+		return iv;
+	}
+	
+	
+	private class ViewImageClickListener implements View.OnClickListener{
+
+		/**
+		 * Catch the click event of each ImageView;
+		 */
+		@Override
+		public void onClick(View v) {
+			MyImage image = (MyImage) v.getTag();
+			File imgFile = new File(image.filePath);
+			if (imgFile.exists()) {
+				Intent viewImgIntent = new Intent(MainActivity.this, ViewImageActivity.class);
+				viewImgIntent.putExtra(IMAGE_PATH, image.filePath);
+				startActivity(viewImgIntent);
+			}
+		}
 	}
 
 	/**
 	 * Start the state of drag and drop
 	 */
 	private void startDragAndDrop() {
+		
+		if (listImageView.size() < 2) {
+			Toast.makeText(this, "Add more photos before sorting", Toast.LENGTH_SHORT).show();
+			return;
+		}
+		
+		tvDragHint.setVisibility(View.VISIBLE);
+		layoutSort.setVisibility(View.VISIBLE);
+		btFinishSorting.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				resetDisplay();
+			}
+		});
+
 		for (ImageView iv : listImageView) {
+			// Set up listeners to receive drop event
+			RelativeLayout parent = (RelativeLayout) iv.getParent();
+			parent.setOnDragListener(new MyDragListener());
+			
+			iv.setOnClickListener(null);
 			iv.setOnTouchListener(new OnTouchListener() {
 
 				@Override
@@ -120,7 +188,6 @@ public class MainActivity extends Activity {
 						View.DragShadowBuilder shadowBuilder = new DragShadowBuilder(
 								v);
 
-						// pass the dragView as an Object to the listener
 						v.startDrag(null, shadowBuilder, v, 0);
 						v.setVisibility(View.INVISIBLE);
 						return true;
@@ -130,17 +197,38 @@ public class MainActivity extends Activity {
 				}
 			});
 
-			// Set up listeners to receive drop event
-			iv.setOnDragListener(new MyDragListener());
 		}
 	}
 
 	private void startMultiSelect() {
-		for (ImageView iv : listImageView) {
+
+		layoutDelete.setVisibility(View.VISIBLE);
+		btDelete.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				deletePhotos();
+				finishMultiSelect();
+			}
+		});
+		
+		
+		btCancel.setOnClickListener(new OnClickListener() {
 			
+			@Override
+			public void onClick(View v) {
+				finishMultiSelect();
+			}
+		});
+		
+		
+
+		listChkbox.clear();
+		for (ImageView iv : listImageView) {
 
 			RelativeLayout parent = (RelativeLayout) iv.getParent();
 			CheckBox chkbox = new CheckBox(this);
+			chkbox.setTag(iv);
 
 			// add a Checkbox onto the top of every photo
 			parent.addView(chkbox);
@@ -148,8 +236,7 @@ public class MainActivity extends Activity {
 			listChkbox.add(chkbox);
 			// very important or you will get ArrayIndexOutOfBoundsException
 			chkbox.setClickable(false);
-			
-			
+
 			iv.setOnClickListener(new OnClickListener() {
 
 				@Override
@@ -164,6 +251,18 @@ public class MainActivity extends Activity {
 			});
 		}
 
+	}
+
+	protected void deletePhotos() {
+		for (CheckBox chkbox: listChkbox) {
+			if (chkbox.isChecked()) {
+				listImageView.remove(chkbox.getTag());
+			}
+		}
+	}
+
+	protected void finishMultiSelect() {
+		resetDisplay();
 	}
 
 	@Override
@@ -192,7 +291,7 @@ public class MainActivity extends Activity {
 			resetDisplay();
 			startDragAndDrop();
 			break;
-			
+
 		case R.id.action_delete_photo:
 			resetDisplay();
 			startMultiSelect();
@@ -206,7 +305,7 @@ public class MainActivity extends Activity {
 	}
 
 	private void goToGallery() {
-		if (listMyImage.size() < 8) {
+		if (listImageView.size() < 8) {
 
 			Intent i = new Intent(
 					Intent.ACTION_PICK,
@@ -256,21 +355,19 @@ public class MainActivity extends Activity {
 
 	private void addSelectedImageToTheDisplay(MyImage image) {
 
-		if (listMyImage.size() < 8) {
-			listMyImage.add(image);
-		}
-
-		ImageView iv = new ImageView(this);
-		iv.setImageBitmap(image.yourSelectedImage);
-		iv.setLayoutParams(new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.MATCH_PARENT));
-		iv.setTag(image);
-
 		if (listImageView.size() < 8) {
+
+			ImageView iv = addImageToImageView(image);
 			listImageView.add(iv);
-			resetDisplay();
+			refreshtContainer(listImageView.indexOf(iv), iv);
 		}
+
+	}
+
+	private void refreshtContainer(int index, ImageView iv) {
+		RelativeLayout parent = listParent.get(index);
+		parent.removeAllViews();
+		parent.addView(iv);
 	}
 
 	private class MyDragListener implements OnDragListener {
@@ -294,7 +391,7 @@ public class MainActivity extends Activity {
 				// dropped, reassign View to a place
 
 				int positionDrag = listImageView.indexOf(dragView);
-				int positionDrop = listImageView.indexOf(dropView);
+				int positionDrop = listParent.indexOf(dropView);
 				Log.d("eric", "drag:" + positionDrag + " ; " + " drop:"
 						+ positionDrop);
 

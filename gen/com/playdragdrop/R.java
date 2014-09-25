@@ -25,13 +25,15 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int action_add_photo=0x7f08001b;
-        public static final int action_delete_photo=0x7f08001d;
-        public static final int action_finish=0x7f08001e;
-        public static final int action_manipulate_photo=0x7f08001a;
-        public static final int action_sort=0x7f08001c;
-        public static final int btDelete=0x7f080019;
-        public static final int btUpload=0x7f080018;
+        public static final int action_add_photo=0x7f08001f;
+        public static final int action_delete_photo=0x7f080021;
+        public static final int action_finish=0x7f080022;
+        public static final int action_manipulate_photo=0x7f08001e;
+        public static final int action_settings=0x7f080023;
+        public static final int action_sort=0x7f080020;
+        public static final int btCancel=0x7f080019;
+        public static final int btDelete=0x7f08001a;
+        public static final int btFinishSorting=0x7f08001c;
         public static final int chk00=0x7f080005;
         public static final int chk01=0x7f080007;
         public static final int chk02=0x7f080009;
@@ -42,6 +44,9 @@ public final class R {
         public static final int chk21=0x7f080015;
         public static final int chk22=0x7f080017;
         public static final int desktop=0x7f080000;
+        public static final int ivFull=0x7f08001d;
+        public static final int layoutDelete=0x7f080018;
+        public static final int layoutSort=0x7f08001b;
         public static final int row0col0=0x7f080004;
         public static final int row0col1=0x7f080006;
         public static final int row0col2=0x7f080008;
@@ -59,15 +64,18 @@ public final class R {
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
-        public static final int single_photo_imageview=0x7f030001;
+        public static final int activity_view_image=0x7f030001;
+        public static final int single_photo_imageview=0x7f030002;
     }
     public static final class menu {
         public static final int main=0x7f070000;
+        public static final int view_image=0x7f070001;
     }
     public static final class string {
         public static final int action_settings=0x7f050002;
         public static final int app_name=0x7f050000;
         public static final int hello_world=0x7f050001;
+        public static final int title_activity_view_image=0x7f050003;
     }
     public static final class style {
         /** 
